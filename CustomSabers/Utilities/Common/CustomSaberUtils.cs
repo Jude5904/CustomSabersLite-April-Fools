@@ -2,7 +2,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace CustomSabersLite.Utilities.Common;
+namespace CustomSabersLite.Utilities;
 
 internal static class CustomSaberUtils
 {

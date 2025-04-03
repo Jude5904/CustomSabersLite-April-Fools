@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CustomSabersLite.Utilities.Extensions;
+namespace CustomSabersLite.Utilities;
 
 internal static class LinqExtensions
 {

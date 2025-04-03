@@ -1,11 +1,11 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using AssetBundleLoadingTools.Models.Shaders;
+﻿using AssetBundleLoadingTools.Models.Shaders;
 using AssetBundleLoadingTools.Utilities;
 using CustomSaber;
+using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
-namespace CustomSabersLite.Utilities.Common;
+namespace CustomSabersLite.Utilities;
 
 internal class ShaderRepairUtils
 {

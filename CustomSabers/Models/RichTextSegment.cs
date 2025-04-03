@@ -1,5 +1,5 @@
-﻿using System;
-using CustomSabersLite.Utilities.Common;
+﻿using CustomSabersLite.Utilities;
+using System;
 
 namespace CustomSabersLite.Models;
 
@@ -20,10 +20,10 @@ internal record RichTextSegment : IComparable<RichTextSegment>
     {
         if (fullText is null) return Unknown;
 
-        string trimmed = fullText.Trim();
+        string? trimmed = fullText.Trim();
         if (trimmed.Length == 0) return Unknown;
 
-        string replaced = RegularExpressions.RichTextRegex.Replace(trimmed, string.Empty);
+        string? replaced = RegularExpressions.RichTextRegex.Replace(trimmed, string.Empty);
         if (replaced.Length == 0) return Unknown;
 
         return new(fullText, replaced);

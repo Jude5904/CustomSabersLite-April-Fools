@@ -1,13 +1,13 @@
-﻿using System.Linq;
-using CustomSaber;
+﻿using CustomSaber;
 using CustomSabersLite.Models;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace CustomSabersLite.Utilities.Common;
+namespace CustomSabersLite.Utilities;
 
-// TODO: use polymorphism instead of the CustomSaberType to get trails from the saber
 internal class CustomTrailUtils
 {
     public static CustomTrailData[] GetTrailFromCustomSaber(GameObject saberObject, CustomSaberType customSaberType) => customSaberType switch
@@ -38,34 +38,37 @@ internal class CustomTrailUtils
     private static CustomTrailData[] TrailsFromWhacker(GameObject saberObject)
     {
         var texts = saberObject.GetComponentsInChildren<Text>();
-        var transformData = texts
-            .Where(text => text.text.Contains("\"isTop\":"))
-            .Select(text => (
-                Text: text, 
-                Data: JsonConvert.DeserializeObject<WhackerTrailTransform>(text.text)))
-            .ToList();
-        var trailData = texts
-            .Where(t => t.text.Contains("\"trailColor\":"))
-            .Select(text => (
-                Text: text,
-                Data: JsonConvert.DeserializeObject<WhackerTrail>(text.text)))
-            .Where(td => td.Data is not null);
-        
-        // search the transform data for each trail and find the matching transform data,
-        // and take the transform from which that transform data originated from
-        return trailData
-            .Select(trail => new CustomTrailData(
-                transformData.Where(transform => transform.Data.isTop)
-                    .FirstOrDefault(transform => transform.Data.trailId == trail.Data!.trailId)
-                    .Text.transform,
-                transformData.Where(transform => !transform.Data.isTop)
-                    .FirstOrDefault(transform => transform.Data.trailId == trail.Data!.trailId)
-                    .Text.transform,
-                trail.Text.GetComponent<MeshRenderer>().material,
-                trail.Data!.colorType,
-                trail.Data.trailColor,
-                trail.Data.multiplierColor,
-                TrailUtils.ConvertLegacyLength(trail.Data.length)))
-            .ToArray();
+        var trailDatas = new Dictionary<Text, WhackerTrailModel>();
+        var transformDatas = new Dictionary<Text, WhackerTrailTransform>();
+
+        foreach (var trailDataText in texts.Where(t => t.text.Contains("\"trailColor\":")))
+        {
+            var trailData = JsonConvert.DeserializeObject<WhackerTrailModel>(trailDataText.text);
+            if (trailData is not null) trailDatas.Add(trailDataText, trailData);
+        }
+        foreach (var trailTransformText in texts.Where(t => t.text.Contains("\"isTop\":")))
+        {
+            transformDatas.Add(trailTransformText, JsonConvert.DeserializeObject<WhackerTrailTransform>(trailTransformText.text));
+        }
+
+        var customTrailData = new List<CustomTrailData>();
+
+        foreach (var trailData in trailDatas)
+        {
+            var trailTop = transformDatas.Where(kvp => kvp.Value.trailId == trailData.Value.trailId && kvp.Value.isTop).FirstOrDefault().Key.transform;
+            var trailBottom = transformDatas.Where(kvp => kvp.Value.trailId == trailData.Value.trailId && !kvp.Value.isTop).FirstOrDefault().Key.transform;
+            var trailMaterial = trailData.Key.GetComponent<MeshRenderer>().material;
+
+            customTrailData.Add(new CustomTrailData(
+                trailTop,
+                trailBottom,
+                trailMaterial,
+                trailData.Value.colorType,
+                trailData.Value.trailColor,
+                trailData.Value.multiplierColor,
+                TrailUtils.ConvertLegacyLength(trailData.Value.length)));
+        }
+
+        return [.. customTrailData];
     }
 }

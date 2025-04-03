@@ -1,6 +1,10 @@
 ﻿using CustomSabersLite.Configuration;
 using CustomSabersLite.Models;
+using System;
 using System.Threading.Tasks;
+using UnityEngine;
+
+using static UnityEngine.Object;
 
 namespace CustomSabersLite.Utilities.Services;
 
@@ -8,16 +12,41 @@ internal class SaberFactory(CustomSabersLoader customSabersLoader, GameResources
 {
     private readonly CustomSabersLoader customSabersLoader = customSabersLoader;
     private readonly CSLConfig config = config;
-    private readonly GameResourcesProvider gameResourcesProvider = gameResourcesProvider;
+    private readonly GameObject defaultSaberPrefab = gameResourcesProvider.SaberModelPrefab;
 
-    public async Task<SaberInstanceSet> InstantiateCurrentSabers() => 
-        (await GetCurrentSaberDataAsync()).Prefab?.Instantiate() ?? CreateDefaultSaberSet();
-    
-    private async Task<ISaberData> GetCurrentSaberDataAsync() =>
-        config.CurrentlySelectedSaber is null or [] ? NoSaberData.Value
+    public async Task<ISaberData> GetCurrentSaberDataAsync() =>
+        config.CurrentlySelectedSaber is null ? NoSaberData.Value
         : await customSabersLoader.GetSaberData(config.CurrentlySelectedSaber, true);
 
-    private SaberInstanceSet CreateDefaultSaberSet() =>
-        new(DefaultSaber.Create(gameResourcesProvider.CreateNewDefaultSaber()), 
-            DefaultSaber.Create(gameResourcesProvider.CreateNewDefaultSaber()));
+    public ILiteSaber Create(SaberType saberType, ISaberData saberData) => saberData switch
+    {
+        CustomSaberData => CreateCustomLiteSaber(saberType, saberData),
+        NoSaberData => CreateDefaultLiteSaber(saberType),
+            
+        // throw to indicate there is a mistake in the model
+        _ => throw new ArgumentOutOfRangeException(nameof(saberData))
+    };
+
+    private ILiteSaber CreateCustomLiteSaber(SaberType saberType, ISaberData saberData)
+    {
+        var prefab = saberData.GetPrefab(saberType);
+
+        return prefab == null ? CreateDefaultLiteSaber(saberType)
+            : new CustomLiteSaber(Instantiate(prefab), saberData.Metadata.SaberFile.Type);
+    }
+
+    private DefaultSaber CreateDefaultLiteSaber(SaberType saberType)
+    {
+        if (defaultSaberPrefab == null)
+        {
+            throw new NullReferenceException(nameof(defaultSaberPrefab));
+        }
+
+        return saberType switch
+        {
+            SaberType.SaberA => new DefaultSaber(Instantiate(defaultSaberPrefab)),
+            SaberType.SaberB => new DefaultSaber(Instantiate(defaultSaberPrefab)),
+            _ => throw new ArgumentOutOfRangeException(nameof(saberType))
+        };
+    }
 }

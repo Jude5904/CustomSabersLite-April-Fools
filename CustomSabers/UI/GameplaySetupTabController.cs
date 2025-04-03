@@ -1,9 +1,9 @@
-﻿using System;
-using BeatSaberMarkupLanguage.GameplaySetup;
+﻿using BeatSaberMarkupLanguage.GameplaySetup;
 using CustomSabersLite.UI.Views;
+using System;
 using Zenject;
 
-namespace CustomSabersLite.UI;
+namespace CustomSabersLite.UI.Managers;
 
 internal class GameplaySetupTabController(GameplaySetupViewController gameplaySetupViewController, GameplaySetup gameplaySetup, GameplaySetupTab tab) : IInitializable, IDisposable
 {

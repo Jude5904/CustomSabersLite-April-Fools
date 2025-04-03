@@ -1,9 +1,9 @@
 ﻿using CustomSabersLite.Components;
 using CustomSabersLite.Configuration;
 using CustomSabersLite.Models;
-using CustomSabersLite.Utilities.Extensions;
+using UnityEngine;
 
-namespace CustomSabersLite.Utilities.Common;
+namespace CustomSabersLite.Utilities;
 
 internal static class TrailUtils
 {
@@ -24,7 +24,7 @@ internal static class TrailUtils
     /// </summary>
     public static void ConfigureTrail(this SaberTrail trail, CSLConfig config, bool useOverrideWidth = false)
     {
-        if (trail == null || trail._trailRenderer == null)
+        if (!trail._trailRenderer)
         {
             return;
         }
@@ -34,22 +34,22 @@ internal static class TrailUtils
         trail._framesToScaleCheck = 0;
         trail._inited = false;
 
-        if (trail is LiteSaberTrail { InstanceTrailData: not null } customTrail)
+        if (trail is LiteSaberTrail customTrail && customTrail.InstanceTrailData != null)
         {
-            float duration = config.OverrideTrailDuration ? config.TrailDuration * DefaultDuration
+            float duration = config.OverrideTrailDuration ? config.TrailDuration / 250f
                 : customTrail.InstanceTrailData.Length;
             customTrail.OverrideWidth = config.TrailWidth;
             customTrail.UseWidthOverride = config.OverrideTrailWidth && useOverrideWidth;
             customTrail._trailDuration = duration;
-            customTrail.enabled = config.TrailType != TrailType.None && !duration.Approximately(0f);
+            customTrail.enabled = config.TrailType != TrailType.None && !Mathf.Approximately(duration, 0f);
         }
-        else
+        else if (trail is SaberTrail defaultTrail)
         {
-            float duration = config.OverrideTrailDuration ? config.TrailDuration * DefaultDuration : DefaultDuration;
-            trail._trailDuration = duration;
-            if (config.TrailType == TrailType.None || duration.Approximately(0f))
+            float duration = config.OverrideTrailDuration ? config.TrailDuration / 250f : DefaultDuration;
+            defaultTrail._trailDuration = duration;
+            if (config.TrailType == TrailType.None || Mathf.Approximately(duration, 0f))
             {
-                trail._color.a = 0f;
+                defaultTrail._color.a = 0f;
             }
         }
     }

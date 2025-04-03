@@ -1,11 +1,10 @@
-﻿using System;
+﻿using IPA.Utilities;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using CustomSabersLite.Utilities.Extensions;
-using IPA.Utilities;
 
-namespace CustomSabersLite.Utilities.Services;
+namespace CustomSabersLite.Utilities;
 
 internal class SaberMetadataCacheMigrationManager
 {
@@ -47,7 +46,7 @@ internal class SaberMetadataCacheMigrationManager
 
         v1Dir.EnumerateFiles("*.meta", SearchOption.TopDirectoryOnly).ForEach(f => f.Delete());
         if (v1Dir.EnumerateFiles("*", SearchOption.AllDirectories).Any())
-            throw new(
+            throw new Exception(
                 "Version 1 cache folder contains alien files.\n" +
                 $"Remove any personal files from {v1Dir.FullName[UnityGame.InstallPath.Length..]}");
         v1Dir.Delete();

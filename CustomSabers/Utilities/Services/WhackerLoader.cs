@@ -1,15 +1,17 @@
 ﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Threading.Tasks;
-using CustomSabersLite.Models;
-using CustomSabersLite.Utilities.Common;
-using CustomSabersLite.Utilities.Extensions;
 using Newtonsoft.Json;
+using CustomSabersLite.Models;
 using UnityEngine;
+using System.Threading.Tasks;
+using CustomSabersLite.Utilities.Common;
 
-namespace CustomSabersLite.Utilities.Services;
+namespace CustomSabersLite.Utilities;
 
+/// <summary>
+/// Class for loading .whacker files
+/// </summary>
 internal class WhackerLoader(SpriteCache spriteCache, ITimeService timeService)
 {
     private readonly SpriteCache spriteCache = spriteCache;
@@ -21,9 +23,11 @@ internal class WhackerLoader(SpriteCache spriteCache, ITimeService timeService)
     /// <summary>
     /// Loads a custom saber from a .whacker file
     /// </summary>
+    /// <param name="relativePath">Path to the .whacker file in the CustomSabers folder</param>
+    /// <returns><seealso cref="NoSaberData"/> if a custom saber failed to load</returns>
     public async Task<ISaberData> LoadWhackerAsync(string relativePath)
     {
-        string path = Path.Combine(sabersPath, relativePath);
+        string? path = Path.Combine(sabersPath, relativePath);
 
         if (!File.Exists(path))
             return new NoSaberData(relativePath, timeService.GetUtcTime(), SaberLoaderError.FileNotFound);
@@ -62,42 +66,34 @@ internal class WhackerLoader(SpriteCache spriteCache, ITimeService timeService)
         saberPrefab.hideFlags |= HideFlags.DontUnloadUnusedAsset;
         saberPrefab.name += $" {whacker.descriptor.objectName}";
 
+        var shaderInfo = await ShaderRepairUtils.RepairSaberShadersAsync(saberPrefab);
+
         #if SHADER_DEBUG
-        await ShaderInfoDump.Instance.RegisterModelShaders(saberPrefab, whacker.descriptor.objectName ?? "Unknown Whacker");
-        #else
-        await ShaderRepairUtils.RepairSaberShadersAsync(saberPrefab);
+        shaderInfo.MissingShaderNames.ForEach(n => ShaderInfoDump.Instance.AddShader(n, whacker.descriptor.objectName ?? "Unknown Whacker"));
         #endif
 
         var icon = await GetDownscaledIcon(archive.GetEntry(whacker.descriptor.coverImage));
         spriteCache.AddSprite(relativePath, icon);
 
-        string assetHash = await Task.Run(() => Hashing.MD5Checksum(path, "x2")) ?? string.Empty;
+        string? assetHash = await Task.Run(() => Hashing.MD5Checksum(path, "x2")) ?? string.Empty;
 
         return
             new CustomSaberData(
                 new CustomSaberMetadata(
-                    new(path, assetHash, timeService.GetUtcTime(), Type),
+                    new SaberFileInfo(path, assetHash, timeService.GetUtcTime(), Type),
                     SaberLoaderError.None,
-                    new(whacker.descriptor.objectName, whacker.descriptor.author, icon)),
+                    new Descriptor(whacker.descriptor.objectName, whacker.descriptor.author, icon)),
                 bundle,
-                new(saberPrefab, Type));
+                saberPrefab);
     }
 
-    private static async Task<Sprite?> GetDownscaledIcon(ZipArchiveEntry? thumbEntry)
+    private async Task<Sprite?> GetDownscaledIcon(ZipArchiveEntry? thumbEntry)
     {
-        if (thumbEntry is null)
-        {
-            return null;
-        }
-
+        if (thumbEntry is null) return null;
         using var memoryStream = new MemoryStream();
-        // TODO: test await using doesn't break unity
-        await using var thumbStream = thumbEntry.Open();
-        
+        using var thumbStream = thumbEntry.Open();
         await thumbStream.CopyToAsync(memoryStream);
-        
         var icon = new Texture2D(2, 2).ToSprite(memoryStream.ToArray());
-        
         return icon == null || icon.texture == null ? null
             : icon.texture.Downscale(128, 128).ToSprite();
     }

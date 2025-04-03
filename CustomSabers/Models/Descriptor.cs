@@ -1,4 +1,4 @@
-﻿using CustomSabersLite.Utilities.Common;
+﻿using CustomSabersLite.Utilities;
 using UnityEngine;
 
 namespace CustomSabersLite.Models;

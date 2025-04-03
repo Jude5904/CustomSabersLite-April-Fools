@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CustomSabersLite.Utilities.Services;
+namespace CustomSabersLite.Utilities;
 
 internal class UtcTimeService : ITimeService
 {

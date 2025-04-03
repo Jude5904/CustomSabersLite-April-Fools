@@ -1,16 +1,16 @@
 ﻿using CustomSabersLite.Models;
+using CustomSabersLite.Utilities;
 using CustomSabersLite.Utilities.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CustomSabersLite.Utilities.Common;
 
 namespace CustomSabersLite.UI;
 
-internal class SaberListManager(SaberPrefabCache saberPrefabCache)
+internal class SaberListManager(SaberInstanceManager saberInstances)
 {
-    private readonly SaberPrefabCache saberPrefabCache = saberPrefabCache;
+    private readonly SaberInstanceManager saberInstanceManager = saberInstances;
  
     private List<SaberListCellInfo> Data { get; set; } = [];
     private List<SaberListCellInfo> SaberList { get; set; } = [];
@@ -42,11 +42,7 @@ internal class SaberListManager(SaberPrefabCache saberPrefabCache)
             File.Delete(destinationPath);
         }
 
-        if (saberPrefabCache.TryGetSaber(relativePath, out var saberData))
-        {
-            saberData.Dispose(true);
-        }
-
+        saberInstanceManager.TryGetSaber(relativePath)?.Dispose(true);
         File.Move(currentSaberPath, destinationPath);
 
         var deletedInfo = Data.FirstOrDefault(i => i.Metadata.SaberFile.RelativePath == relativePath);
@@ -93,6 +89,6 @@ internal class SaberListManager(SaberPrefabCache saberPrefabCache)
             SaberLoaderError.None => meta.Descriptor.Icon,
             _ => CSLResources.DefaultCoverImage
         };
-        return new(meta, text, spriteIcon);
+        return new SaberListCellInfo(meta, text, spriteIcon);
     }
 }

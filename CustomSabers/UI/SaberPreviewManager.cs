@@ -1,14 +1,16 @@
 ﻿using CustomSabersLite.Configuration;
+using CustomSabersLite.UI.Managers;
+using CustomSabersLite.Utilities;
 using CustomSabersLite.Utilities.Services;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CustomSabersLite.Models;
-using CustomSabersLite.Utilities.Extensions;
 using UnityEngine;
 using Zenject;
 
 namespace CustomSabersLite.UI;
+
+#pragma warning disable IDE0031 // Use null propagation
 
 internal class SaberPreviewManager : IInitializable, IDisposable
 {
@@ -27,17 +29,14 @@ internal class SaberPreviewManager : IInitializable, IDisposable
     private bool previewActive;
     private bool previewGenerating;
 
-    private SaberInstanceSet? basicPreviewSaberSet;
-    private SaberInstanceSet? heldPreviewSaberSet;
-    
     public void Initialize()
     {
         leftPreviewParent.SetParent(previewParent);
         rightPreviewParent.SetParent(previewParent);
 
-        previewParent.SetPositionAndRotation(new(0.7f, 0.8f, 1.1f), Quaternion.Euler(270f, 125f, 0f));
-        leftPreviewParent.localPosition = new(0f, 0.17f, 0f);
-        rightPreviewParent.localPosition = new(0f, -0.17f, 0f);
+        previewParent.SetPositionAndRotation(new Vector3(0.7f, 0.8f, 1.1f), Quaternion.Euler(270f, 125f, 0f));
+        leftPreviewParent.localPosition = new Vector3(0f, 0.17f, 0f);
+        rightPreviewParent.localPosition = new Vector3(0f, -0.17f, 0f);
         rightPreviewParent.localRotation = Quaternion.Euler(0f, 0f, 180f);
 
         basicPreviewSaberManager.Init(leftPreviewParent, rightPreviewParent);
@@ -48,21 +47,20 @@ internal class SaberPreviewManager : IInitializable, IDisposable
     {
         previewGenerating = true;
         UpdateActivePreview();
-        
-        basicPreviewSaberSet?.Dispose();
-        heldPreviewSaberSet?.Dispose();
 
-        basicPreviewSaberSet = await saberFactory.InstantiateCurrentSabers();
-        heldPreviewSaberSet = await saberFactory.InstantiateCurrentSabers();
+        var saberData = await saberFactory.GetCurrentSaberDataAsync();
         token.ThrowIfCancellationRequested();
 
-        basicPreviewSaberManager.ReplaceSabers(basicPreviewSaberSet.LeftSaber, basicPreviewSaberSet.RightSaber);
-        basicPreviewTrailManager.SetTrails(basicPreviewSaberSet.LeftSaber, basicPreviewSaberSet.RightSaber);
+        var leftSaber = saberFactory.Create(SaberType.SaberA, saberData);
+        var rightSaber = saberFactory.Create(SaberType.SaberB, saberData);
+        basicPreviewSaberManager.ReplaceSabers(leftSaber, rightSaber);
+        basicPreviewTrailManager.SetTrails(leftSaber, rightSaber);
 
-        menuSaberManager.ReplaceSabers(heldPreviewSaberSet.LeftSaber, heldPreviewSaberSet.RightSaber);
+        var leftMenuSaber = saberFactory.Create(SaberType.SaberA, saberData);
+        var rightMenuSaber = saberFactory.Create(SaberType.SaberB, saberData);
+        menuSaberManager.ReplaceSabers(leftMenuSaber, rightMenuSaber);
 
         UpdateTrails();
-        UpdateSaberModels();
         UpdateColor();
 
         previewGenerating = false;
@@ -77,24 +75,14 @@ internal class SaberPreviewManager : IInitializable, IDisposable
 
     public void UpdateActivePreview()
     {
-        bool previewIsActive = previewActive && !previewGenerating;
-        previewParent.gameObject.SetActive(previewIsActive && !config.EnableMenuSabers);
-        menuSaberManager.SetActive(previewIsActive && config.EnableMenuSabers);
+        previewParent.gameObject.SetActive(previewActive && !previewGenerating && !config.EnableMenuSabers);
+        menuSaberManager.SetActive(previewActive && !previewGenerating && config.EnableMenuSabers);
     }
 
     public void UpdateTrails()
     {
         basicPreviewTrailManager.UpdateTrails();
         menuSaberManager.UpdateTrails();
-    }
-
-    public void UpdateSaberModels()
-    {
-        float length = config.OverrideSaberLength ? config.SaberLength : 1f;
-        float width = config.OverrideSaberWidth ? config.SaberWidth : 1f;
-        basicPreviewSaberManager.UpdateSaberScale(length, width);
-        menuSaberManager.UpdateSaberScale(length, width);
-        basicPreviewTrailManager.UpdateTrails();
     }
 
     public void UpdateColor()

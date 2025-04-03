@@ -1,13 +1,13 @@
-﻿using System;
-using BeatSaberMarkupLanguage.Components;
+﻿using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.Components.Settings;
-using CustomSabersLite.Utilities.Extensions;
 using HMUI;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
+
 using static UnityEngine.Object;
 
-namespace CustomSabersLite.Utilities.Common;
+namespace CustomSabersLite.Utilities;
 
 internal class BSMLHelpers
 {

@@ -1,7 +1,6 @@
 ﻿using CustomSaber;
+using CustomSabersLite.Utilities;
 using System.Collections.Generic;
-using CustomSabersLite.Utilities.Common;
-using CustomSabersLite.Utilities.Extensions;
 using UnityEngine;
 
 namespace CustomSabersLite.Models;
@@ -11,6 +10,7 @@ internal class CustomLiteSaber : ILiteSaber
     private Material[] ColorableMaterials { get; }
 
     public GameObject GameObject { get; }
+    public Transform Transform { get; }
     public EventManager? EventManager { get; }
     public CustomTrailData[] TrailData { get; }
 
@@ -18,6 +18,7 @@ internal class CustomLiteSaber : ILiteSaber
     {
         GameObject = gameObject;
         GameObject.SetLayerRecursively(12);
+        Transform = gameObject.transform;
         EventManager = gameObject.TryGetComponentOrAdd<EventManager>();
         TrailData = CustomTrailUtils.GetTrailFromCustomSaber(gameObject, customSaberType);
         ColorableMaterials = GetColorableMaterials(gameObject);
@@ -33,16 +34,10 @@ internal class CustomLiteSaber : ILiteSaber
 
     public void SetParent(Transform parent)
     {
-        GameObject.transform.SetParent(parent, false);
-        GameObject.transform.position = parent.position;
-        GameObject.transform.rotation = parent.rotation;
+        Transform.SetParent(parent, false);
+        Transform.position = parent.position;
+        Transform.rotation = parent.rotation;
     }
-
-    public void SetLength(float length) =>
-        GameObject.transform.localScale = GameObject.transform.localScale with { z = length };
-
-    public void SetWidth(float width) =>
-        GameObject.transform.localScale = GameObject.transform.localScale with { x = width, y = width };
 
     public void Destroy()
     {

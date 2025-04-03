@@ -3,6 +3,7 @@ using BeatSaberMarkupLanguage.Components;
 using BeatSaberMarkupLanguage.ViewControllers;
 using CustomSabersLite.Configuration;
 using CustomSabersLite.Models;
+using CustomSabersLite.Utilities;
 using HMUI;
 using IPA.Utilities.Async;
 using System;
@@ -13,8 +14,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using CustomSabersLite.Utilities.Common;
-using CustomSabersLite.Utilities.Services;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -67,6 +66,7 @@ internal class SaberListViewController : BSMLAutomaticViewController
 
         sortDirectionIcon.rectTransform.localRotation = Quaternion.Euler(0f, 0f, config.ReverseSort ? 180f : 0f);
 
+        RefreshList();
         loadingIcon.SetActive(!saberMetadataCache.CurrentProgress.Completed);
     }
 

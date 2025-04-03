@@ -1,30 +1,24 @@
-﻿namespace CustomSabersLite.Configuration;
+﻿using CustomSabersLite.Models;
 
-internal interface ISharedSaberSettings
+namespace CustomSabersLite.Configuration;
+
+internal class SharedSaberSettings
 {
-    public bool DisableWhiteTrail { get; set; }
-    public bool OverrideTrailDuration { get; set; }
-    public float TrailDuration { get; set; }
-    public bool OverrideTrailWidth { get; set; }
-    public float TrailWidth { get; set; }
-    public bool OverrideSaberLength { get; set; }
-    public float SaberLength { get; set; }
-    public bool OverrideSaberWidth { get; set; }
-    public float SaberWidth { get; set; }
-    public string TrailType { get; set; }
-    public bool EnableCustomEvents { get; set; }
+    public bool DisableWhiteTrail;
+    public bool OverrideTrailDuration;
+    public int TrailDuration;
+    public bool OverrideTrailWidth;
+    public int TrailWidth;
+    public TrailType TrailType;
+    public bool EnableCustomEvents;
 
-    internal static string[] PropertyNames { get; } =
+    internal static string[] PropertyNames =
     [
         nameof(DisableWhiteTrail),
         nameof(OverrideTrailDuration),
         nameof(TrailDuration),
         nameof(OverrideTrailWidth),
         nameof(TrailWidth),
-        nameof(OverrideSaberLength),
-        nameof(SaberLength),
-        nameof(OverrideSaberWidth),
-        nameof(SaberWidth),
         nameof(TrailType),
         nameof(EnableCustomEvents)
     ];

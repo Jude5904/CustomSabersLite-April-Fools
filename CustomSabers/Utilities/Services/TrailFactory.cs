@@ -3,7 +3,6 @@ using UnityEngine;
 using CustomSabersLite.Models;
 using CustomSabersLite.Configuration;
 using CustomSabersLite.Components;
-using CustomSabersLite.Utilities.Common;
 
 namespace CustomSabersLite.Utilities.Services;
 
@@ -12,8 +11,10 @@ internal class TrailFactory(CSLConfig config, GameResourcesProvider gameResource
     private readonly CSLConfig config = config;
     private readonly GameResourcesProvider gameResourcesProvider = gameResourcesProvider;
 
-    private const int DefaultSamplingFrequency = 120;
-    private const int DefaultGranularity = 45;
+    private SaberTrailRenderer TrailRendererPrefab => gameResourcesProvider.SaberTrailRenderer;
+
+    private readonly int defaultSamplingFrequency = 120;
+    private readonly int defaultGranularity = 45;
 
     /// <summary>
     /// Sets up custom trails for a custom saber
@@ -45,12 +46,12 @@ internal class TrailFactory(CSLConfig config, GameResourcesProvider gameResource
     private LiteSaberTrail CreateTrail(GameObject saberObject, CustomTrailData trailData, float intensity)
     {
         var trail = saberObject.AddComponent<LiteSaberTrail>();
-        var baseColor = trailData.GetTrailColor() with { a = intensity };
+        var baseColor = trailData.Color.ColorWithAlpha(intensity) * trailData.ColorMultiplier;
 
         trail._trailDuration = trailData.Length;
-        trail._samplingFrequency = DefaultSamplingFrequency;
-        trail._granularity = DefaultGranularity;
-        trail._trailRenderer = gameResourcesProvider.CreateNewSaberTrailRenderer();
+        trail._samplingFrequency = defaultSamplingFrequency;
+        trail._granularity = defaultGranularity;
+        trail._trailRenderer = Object.Instantiate(TrailRendererPrefab, Vector3.zero, Quaternion.identity);
         if (trail._trailRenderer != null)
         {
             trail._trailRenderer._meshRenderer.material = trailData.Material;
@@ -78,7 +79,7 @@ internal class TrailFactory(CSLConfig config, GameResourcesProvider gameResource
 
         var trailData = new CustomTrailData(
             top, bottom,
-            gameResourcesProvider.DefaultTrailMaterial,
+            TrailRendererPrefab._meshRenderer.material,
             saberType == SaberType.SaberA ? CustomSaber.ColorType.LeftSaber : CustomSaber.ColorType.RightSaber,
             Color.white, Color.white,
             TrailUtils.DefaultDuration);

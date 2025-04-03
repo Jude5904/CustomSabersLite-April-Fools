@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace CustomSabersLite.Utilities.Extensions;
+namespace CustomSabersLite.Utilities;
 
 internal static class GameObjectExtensions
 {
@@ -9,27 +9,12 @@ internal static class GameObjectExtensions
 
     public static void Destroy(this GameObject? obj)
     {
-        if (obj != null) Object.Destroy(obj);
-    }
-
-    public static void Destroy(this Transform? t)
-    {
-        if (t != null && t.gameObject != null) Object.Destroy(t.gameObject);
+        if (obj != null && obj) Object.Destroy(obj);
     }
 
     public static void DestroyImmediate(this GameObject? obj)
     {
         if (obj != null && obj) Object.DestroyImmediate(obj);
-    }
-
-    public static void DestroyImmediate(this Transform? t)
-    {
-        if (t != null && t.gameObject != null) Object.DestroyImmediate(t.gameObject);
-    }
-
-    public static void DestroyComponent(this Component? component)
-    {
-        if (component != null) Object.Destroy(component);
     }
 
     public static void SetLayerRecursively(this GameObject obj, int layer) => SetLayer(obj, layer);

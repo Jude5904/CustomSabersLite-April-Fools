@@ -3,6 +3,8 @@ using Zenject;
 
 namespace CustomSabersLite;
 
+#pragma warning disable IDE0031 // Use null propagation
+
 internal class PauseMenuHandlesFix(MultiplayerLocalActivePlayerInGameMenuViewController multiplayerLocalActivePlayerInGameMenuViewControllerAndThisIsAReallyLongNameThatMakesMyWordWrappingLookFunny, ICoroutineStarter coroutineStarter) : IInitializable
 {
     private readonly MultiplayerLocalActivePlayerInGameMenuViewController multiplayerLocalActivePlayerInGameMenuViewController = multiplayerLocalActivePlayerInGameMenuViewControllerAndThisIsAReallyLongNameThatMakesMyWordWrappingLookFunny;

@@ -2,7 +2,7 @@
 
 namespace CustomSabersLite.Models;
 
-internal class WhackerTrail
+internal class WhackerTrailModel
 {
     public int trailId;
     public CustomSaber.ColorType colorType;

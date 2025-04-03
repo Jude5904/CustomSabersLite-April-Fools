@@ -1,11 +1,14 @@
 ﻿using CustomSaber;
+using CustomSabersLite.Configuration;
 using System;
+using UnityEngine;
 using System.Linq;
-using CustomSabersLite.Utilities.Extensions;
 
 namespace CustomSabersLite.Utilities.Services;
 
-internal class SaberEventService(BeatmapObjectManager beatmapObjectManager, GameEnergyCounter gameEnergyCounter, ObstacleSaberSparkleEffectManager obstacleCollisionManager, RelativeScoreAndImmediateRankCounter relativeScoreCounter, IScoreController scoreController, IComboController comboController, IReadonlyBeatmapData beatmapData) : IDisposable
+#pragma warning disable IDE0031 // Use null propagation
+
+internal class SaberEventService(BeatmapObjectManager beatmapObjectManager, GameEnergyCounter gameEnergyCounter, ObstacleSaberSparkleEffectManager obstacleCollisionManager, RelativeScoreAndImmediateRankCounter relativeScoreCounter, IScoreController scoreController, IComboController comboController, IReadonlyBeatmapData beatmapData, CSLConfig config) : IDisposable
 {
     private readonly BeatmapObjectManager beatmapObjectManager = beatmapObjectManager;
     private readonly GameEnergyCounter gameEnergyCounter = gameEnergyCounter;
@@ -14,21 +17,23 @@ internal class SaberEventService(BeatmapObjectManager beatmapObjectManager, Game
     private readonly IScoreController scoreController = scoreController;
     private readonly IComboController comboController = comboController;
     private readonly IReadonlyBeatmapData beatmapData = beatmapData;
+    private readonly CSLConfig config = config;
 
     private EventManager? eventManager;
     private float? lastNoteTime;
     private float previousScore;
     private SaberType saberType;
 
-    public void InitializeEventManager(EventManager? eventManager, SaberType saberType)
+    public void InitializeEventManager(EventManager eventManager, SaberType saberType)
     {
-        if (eventManager == null || eventManager.OnLevelStart == null)
+        this.eventManager = eventManager;
+        this.saberType = saberType;
+
+        if (!config.EnableCustomEvents ||
+            eventManager && eventManager.OnLevelStart == null)
         {
             return;
         }
-        
-        this.eventManager = eventManager;
-        this.saberType = saberType;
 
         Logger.Debug("Adding events");
 
@@ -89,7 +94,7 @@ internal class SaberEventService(BeatmapObjectManager beatmapObjectManager, Game
             eventManager.OnSlice?.Invoke();
         }
 
-        if (noteController.noteData.time.Approximately(lastNoteTime.Value))
+        if (Mathf.Approximately(noteController.noteData.time, lastNoteTime.Value))
         {
             lastNoteTime = 0;
             eventManager.OnLevelEnded?.Invoke();
@@ -105,7 +110,7 @@ internal class SaberEventService(BeatmapObjectManager beatmapObjectManager, Game
             eventManager.OnComboBreak?.Invoke();
         }
 
-        if (noteController.noteData.time.Approximately(lastNoteTime.Value))
+        if (Mathf.Approximately(noteController.noteData.time, lastNoteTime.Value))
         {
             lastNoteTime = 0;
             eventManager.OnLevelEnded?.Invoke();

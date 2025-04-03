@@ -11,15 +11,11 @@ using BeatSaberMarkupLanguage.Components;
 using HMUI;
 using System.ComponentModel;
 using System.Collections;
-using CustomSabersLite.Utilities.Common;
-using CustomSabersLite.Utilities.Extensions;
-using CustomSabersLite.Utilities.Services;
-using JetBrains.Annotations;
+using CustomSabersLite.Utilities;
 
 namespace CustomSabersLite.UI.Views;
 
-[UsedImplicitly]
-internal class GameplaySetupTab : IDisposable, INotifyPropertyChanged, ISharedSaberSettings
+internal class GameplaySetupTab : IDisposable, INotifyPropertyChanged
 {
     [Inject] private readonly CSLConfig config = null!;
     [Inject] private readonly SaberMetadataCache saberMetadataCache = null!;
@@ -28,93 +24,64 @@ internal class GameplaySetupTab : IDisposable, INotifyPropertyChanged, ISharedSa
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    [UIComponent("trail-duration")] private readonly ImageView trailDurationIcon = null!; 
-    [UIComponent("trail-width")] private readonly ImageView trailWidthIcon = null!;
-    [UIComponent("saber-length")] private readonly ImageView saberLengthIcon = null!;
-    [UIComponent("saber-width")] private readonly ImageView saberWidthIcon = null!;
+    [UIComponent("trail-duration")] private readonly SliderSetting trailDurationSlider = null!;
+    [UIComponent("trail-width")] private readonly SliderSetting trailWidthSlider = null!;
     [UIComponent("trail-type")] private readonly ListSetting trailTypeList = null!;
     [UIComponent("saber-list")] private readonly CustomListTableData saberList = null!;
 
-    [UIValue("enabled")]
-    private bool Enabled
-    {
-        get => config.Enabled;
-        set => config.Enabled = value;
-    }
-    
     [UIValue("disable-white-trail")]
-    public bool DisableWhiteTrail
+    private bool DisableWhiteTrail
     {
         get => config.DisableWhiteTrail;
         set => config.DisableWhiteTrail = value;
     }
 
     [UIValue("override-trail-duration")]
-    public bool OverrideTrailDuration
+    private bool OverrideTrailDuration
     {
         get => config.OverrideTrailDuration;
-        set => config.OverrideTrailDuration = value;
+        set
+        {
+            config.OverrideTrailDuration = value;
+            BSMLHelpers.SetSliderInteractable(trailDurationSlider, value);
+        }
     }
 
     [UIValue("trail-duration")]
-    public float TrailDuration
+    private int TrailDuration
     {
         get => config.TrailDuration;
         set => config.TrailDuration = value;
     }
 
     [UIValue("override-trail-width")]
-    public bool OverrideTrailWidth
+    private bool OverrideTrailWidth
     {
         get => config.OverrideTrailWidth;
-        set => config.OverrideTrailWidth = value;
+        set
+        {
+            config.OverrideTrailWidth = value;
+            BSMLHelpers.SetSliderInteractable(trailWidthSlider, value);
+        }
     }
 
     [UIValue("trail-width")]
-    public float TrailWidth
+    private int TrailWidth
     {
         get => config.TrailWidth;
         set => config.TrailWidth = value;
     }
-    
-    [UIValue("override-saber-length")]
-    public bool OverrideSaberLength
-    {
-        get => config.OverrideSaberLength;
-        set => config.OverrideSaberLength = value;
-    }
-    
-    [UIValue("saber-length")]
-    public float SaberLength
-    {
-        get => config.SaberLength;
-        set => config.SaberLength = value;
-    }
-    
-    [UIValue("override-saber-width")]
-    public bool OverrideSaberWidth
-    {
-        get => config.OverrideSaberWidth;
-        set => config.OverrideSaberWidth = value;
-    }
-    
-    [UIValue("saber-width")]
-    public float SaberWidth
-    {
-        get => config.SaberWidth;
-        set => config.SaberWidth = value;
-    }
 
     [UIValue("trail-type-choices")] private List<object> trailTypeChoices = [.. Enum.GetNames(typeof(TrailType))];
     [UIValue("trail-type")]
-    public string TrailType
+    private string TrailType
     {
         get => config.TrailType.ToString();
         set => config.TrailType = Enum.TryParse(value, out TrailType trailType) ? trailType : config.TrailType;
     }
 
     [UIValue("enable-custom-events")]
-    public bool EnableCustomEvents
+    private bool EnableCustomEvents
     {
         get => config.EnableCustomEvents;
         set => config.EnableCustomEvents = value;
@@ -124,11 +91,12 @@ internal class GameplaySetupTab : IDisposable, INotifyPropertyChanged, ISharedSa
     private void PostParse()
     {
         saberMetadataCache.LoadingProgressChanged += LoadingProgressChanged;
-        
-        trailDurationIcon.sprite = CSLResources.TrailDurationIcon;
-        trailWidthIcon.sprite = CSLResources.TrailWidthIcon;
-        saberLengthIcon.sprite = CSLResources.SaberLengthIcon;
-        saberWidthIcon.sprite = CSLResources.SaberWidthIcon;
+
+        BSMLHelpers.SetSliderInteractable(trailDurationSlider, OverrideTrailDuration);
+        BSMLHelpers.SetSliderInteractable(trailWidthSlider, OverrideTrailWidth);
+
+        BSMLHelpers.SetSliderWidth(trailDurationSlider, 50, 0);
+        BSMLHelpers.SetSliderWidth(trailWidthSlider, 50, 0);
 
         BSMLHelpers.SetDropDownSettingWidth(trailTypeList, 25, 0);
         
@@ -141,7 +109,7 @@ internal class GameplaySetupTab : IDisposable, INotifyPropertyChanged, ISharedSa
         config.CurrentlySelectedSaber = saberListManager.Select(row)?.Metadata.SaberFile.RelativePath;
         Logger.Debug($"Saber selected: {config.CurrentlySelectedSaber ?? "Default"}");
     }
-    
+
     public void RefreshList()
     {
         if (!saberMetadataCache.CurrentProgress.Completed)
@@ -155,7 +123,7 @@ internal class GameplaySetupTab : IDisposable, INotifyPropertyChanged, ISharedSa
 
     public void Activated(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
     {
-        ISharedSaberSettings.PropertyNames.ForEach(NotifyPropertyChanged);
+        SharedSaberSettings.PropertyNames.ForEach(NotifyPropertyChanged);
         RefreshList();
         coroutineStarter.StartSingleCoroutine(ref scrollToSelectedCellCoroutine, ScrollToSelectedCell());
     }
@@ -176,7 +144,7 @@ internal class GameplaySetupTab : IDisposable, INotifyPropertyChanged, ISharedSa
     }
 
     private void NotifyPropertyChanged(string propertyName) =>
-        PropertyChanged?.Invoke(this, new(propertyName));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
     public void Dispose() =>
         saberMetadataCache.LoadingProgressChanged -= LoadingProgressChanged;

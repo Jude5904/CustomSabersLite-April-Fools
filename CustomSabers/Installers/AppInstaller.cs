@@ -1,5 +1,6 @@
 ﻿using CustomSabersLite.Configuration;
 using CustomSabersLite.UI;
+using CustomSabersLite.Utilities;
 using CustomSabersLite.Utilities.Services;
 using Zenject;
 
@@ -27,7 +28,7 @@ internal class AppInstaller(CSLConfig config) : Installer
         Container.Bind<WhackerLoader>().AsSingle();
         Container.Bind<CustomSabersLoader>().AsSingle();
 
-        Container.BindInterfacesAndSelfTo<SaberPrefabCache>().AsSingle();
+        Container.BindInterfacesAndSelfTo<SaberInstanceManager>().AsSingle();
         Container.Bind<SaberFactory>().AsSingle();
         Container.Bind<TrailFactory>().AsSingle();
     }

@@ -1,12 +1,12 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using CustomSabersLite.UI.Views;
-using CustomSabersLite.Utilities.Services;
+﻿using CustomSabersLite.UI.Views;
+using CustomSabersLite.Utilities;
 using HMUI;
 using IPA.Utilities.Async;
+using System.Threading;
+using System.Threading.Tasks;
 using Zenject;
 
-namespace CustomSabersLite.UI;
+namespace CustomSabersLite.UI.Managers;
 
 internal class CSLFlowCoordinator : FlowCoordinator
 {
@@ -24,7 +24,7 @@ internal class CSLFlowCoordinator : FlowCoordinator
     private void Awake() =>
         cacheManager.LoadingProgressChanged += LoadingProgressChanged;
 
-    public override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
+    protected override void DidActivate(bool firstActivation, bool addedToHierarchy, bool screenSystemEnabling)
     {
         if (firstActivation)
         {
@@ -70,6 +70,6 @@ internal class CSLFlowCoordinator : FlowCoordinator
         cancellationTokenSource.Dispose();
     }
 
-    public override void BackButtonWasPressed(ViewController topViewController) =>
+    protected override void BackButtonWasPressed(ViewController topViewController) =>
         mainFlowCoordinator.DismissFlowCoordinator(this);
 }

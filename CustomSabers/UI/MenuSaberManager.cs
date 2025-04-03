@@ -1,8 +1,8 @@
 ﻿using CustomSabersLite.Models;
-using CustomSabersLite.Utilities.Services;
+using CustomSabersLite.Utilities;
 using UnityEngine;
 
-namespace CustomSabersLite.UI;
+namespace CustomSabersLite.UI.Managers;
 
 internal class MenuSaberManager(MenuPointers menuPointers, MenuSaber.Factory menuSaberFactory)
 {
@@ -20,12 +20,6 @@ internal class MenuSaberManager(MenuPointers menuPointers, MenuSaber.Factory men
     {
         leftSaber?.UpdateTrails();
         rightSaber?.UpdateTrails();
-    }
-
-    public void UpdateSaberScale(float length, float width)
-    {
-        leftSaber?.UpdateSaberScale(length, width);
-        rightSaber?.UpdateSaberScale(length, width);
     }
 
     public void SetColor(Color left, Color right)

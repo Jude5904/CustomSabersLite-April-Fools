@@ -1,47 +1,36 @@
-﻿using System;
+﻿using BGLib.UnityExtension;
+using System;
 using System.Linq;
-using BGLib.UnityExtension;
-using CustomSabersLite.Utilities.Extensions;
 using UnityEngine;
 using Zenject;
-using Object = UnityEngine.Object;
 
-namespace CustomSabersLite.Utilities.Services;
+namespace CustomSabersLite.Utilities;
 
 
 internal class GameResourcesProvider : IInitializable
 {
-    private readonly SaberTrailRenderer saberTrailRenderer;
-    private readonly GameObject saberModelPrefab;
+    public SaberTrailRenderer SaberTrailRenderer { get; private set; }
+
+    public GameObject SaberModelPrefab { get; private set; }
 
     private GameResourcesProvider()
     {
-        saberTrailRenderer = LoadAsset<GameObject>("Assets/Prefabs/Effects/Sabers/SaberTrailRenderer.prefab").GetComponent<SaberTrailRenderer>();
-        saberModelPrefab = LoadAsset<GameObject>("Assets/Prefabs/Sabers/BasicSaberModel.prefab");
-    }
-
-    public Material DefaultTrailMaterial => saberTrailRenderer._meshRenderer.material;
-    
-    public SaberTrailRenderer CreateNewSaberTrailRenderer() => 
-        Object.Instantiate(saberTrailRenderer, Vector3.zero, Quaternion.identity);
-
-    public GameObject CreateNewDefaultSaber()
-    {
-        var saberObject = Object.Instantiate(saberModelPrefab, Vector3.zero, Quaternion.identity);
-        saberObject.GetComponentsInChildren<SetSaberGlowColor>().ForEach(x => x.enabled = false);
-        saberObject.GetComponentsInChildren<SetSaberFakeGlowColor>().ForEach(x => x.enabled = false);
-        saberObject.GetComponent<SaberTrail>().enabled = false;
-        saberObject.SetActive(true);
-        return saberObject;
+        SaberTrailRenderer = LoadAsset<GameObject>("Assets/Prefabs/Effects/Sabers/SaberTrailRenderer.prefab").GetComponent<SaberTrailRenderer>();
+        SaberModelPrefab = LoadAsset<GameObject>("Assets/Prefabs/Sabers/BasicSaberModel.prefab");
     }
 
     public void Initialize()
     {
-        saberTrailRenderer._meshRenderer = saberTrailRenderer.GetComponent<MeshRenderer>();
-        saberTrailRenderer._meshFilter = saberTrailRenderer.GetComponent<MeshFilter>();
+        SaberTrailRenderer._meshRenderer = SaberTrailRenderer.GetComponent<MeshRenderer>();
+        SaberTrailRenderer._meshFilter = SaberTrailRenderer.GetComponent<MeshFilter>();
+
+        SaberModelPrefab.transform.position = Vector3.zero;
+        SaberModelPrefab.GetComponentsInChildren<SetSaberGlowColor>().ForEach(x => x.enabled = false);
+        SaberModelPrefab.GetComponentsInChildren<SetSaberFakeGlowColor>().ForEach(x => x.enabled = false);
+        SaberModelPrefab.GetComponent<SaberTrail>().enabled = false;
     }
 
-    private static T LoadAsset<T>(object label) where T : Object => 
+    private T LoadAsset<T>(object label) where T : UnityEngine.Object => 
         AddressablesExtensions.LoadContent<T>(label).FirstOrDefault() 
         ?? throw new InvalidOperationException("An internal resource failed to load");
 }
