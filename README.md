@@ -1,3 +1,13 @@
+# What does this fork do differently?
+>Not Much
+
+This fork allows the floating sabers in the menu to appear, no matter what day it is. Originally, it would only appear on April 1st, or April Fools.
+![Preview of the menu during april fools with CustomSabersLite installed](https://raw.githubusercontent.com/Jude5904/CustomSabersLite-April-Fools/refs/heads/main/image.png)
+**Why?** Me and some other guy who requested this mod in the [BSMG](bsmg.wiki) Discord thought it looked cool.
+
+**Can I Toggle it on/off?** Not as of writing this ReadMe. You can check for yourself, but currently, no. I have plans to, and someone can contribute if they want.
+
+# [Original Repo](https://github.com/qqrz997/CustomSabersLite)'s Readme
 > [!NOTE]
 > Some sabers have shaders that are compiled for the old unity version used prior to Beat Saber 1.29.4, and may not render properly at all. However, a wide range of sabers are still completely functional and it is up to the saber creators to update the shaders they used if they are broken.
 
