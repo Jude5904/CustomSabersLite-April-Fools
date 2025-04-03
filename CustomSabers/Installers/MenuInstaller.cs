@@ -39,10 +39,6 @@ internal class MenuInstaller : Installer
         Container.Bind<BasicPreviewSaberManager>().AsSingle();
         Container.Bind<BasicPreviewTrailManager>().AsSingle();
 
-        var time = IPA.Utilities.Utils.CanUseDateTimeNowSafely ? DateTime.Now : DateTime.UtcNow;
-        if (time.Month == 4 && time.Day == 1)
-        {
-            Container.BindInterfacesTo<Jester>().AsSingle();
-        }
+        Container.BindInterfacesTo<Jester>().AsSingle();
     }
 }
